@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">InstrumentTrainer</string>
+    <string name="nav_practice">Ćwiczenia</string>
+    <string name="nav_journal">Dziennik</string>
+    <string name="nav_challenge">Wyzwanie</string>
+    <string name="nav_settings">Ustawienia</string>
+    <string name="screen_practice_title">Sala ćwiczeń</string>
+    <string name="screen_journal_title">Dziennik postępów</string>
+    <string name="screen_challenge_title">Tryb wyzwania</string>
+    <string name="screen_settings_title">Ustawienia</string>
+</resources>
