@@ -69,7 +69,7 @@ fun InstrumentTrainerRoot() {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(NavRoutes.PRACTICE) {
-                PracticeRoomScreen(title = stringResource(R.string.screen_practice_title))
+                PracticeRoomScreen()
             }
             composable(NavRoutes.JOURNAL) {
                 ProgressJournalScreen(title = stringResource(R.string.screen_journal_title))

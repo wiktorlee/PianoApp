@@ -8,4 +8,10 @@
     <string name="screen_journal_title">Dziennik postępów</string>
     <string name="screen_challenge_title">Tryb wyzwania</string>
     <string name="screen_settings_title">Ustawienia</string>
+    <string name="practice_amplitude">Amplituda: %.2f</string>
+    <string name="practice_target_note">Nuta docelowa: %1$s</string>
+    <string name="practice_match_ok">OK</string>
+    <string name="practice_match_wrong">Błąd</string>
+    <string name="practice_permission_required">Aby nasłuchiwać, zezwól na dostęp do mikrofonu.</string>
+    <string name="practice_permission_grant">Zezwól na mikrofon</string>
 </resources>

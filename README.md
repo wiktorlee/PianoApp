@@ -44,7 +44,7 @@ com.example.instrumenttrainer/
 - Nawigacja między czterema ekranami (placeholdery)
 - Pakiet / `applicationId`: `com.example.instrumenttrainer`
 
-### Etap 1 — audio i klasyfikacja (mock)
+### Etap 1 — audio i klasyfikacja (mock) (zrobione)
 
 - `NoteClassifier` (interfejs w domain)
 - `MockNoteClassifier` — losowa nuta co ~500 ms przez Flow
@@ -52,12 +52,12 @@ com.example.instrumenttrainer/
 - Repozytorium / use case łączące capture z classifierem
 - Zatrzymanie capture przy zamknięciu ViewModelu
 
-### Etap 2 — PracticeRoom
+### Etap 2 — PracticeRoom (zrobione)
 
 - Uprawnienie `RECORD_AUDIO` w runtime
 - `PracticeRoomViewModel` + Compose UI
 - Wyświetlanie wykrytej nuty, kolor OK / błąd względem nuty docelowej
-- Prosty wizualizator (np. Canvas + amplituda z bufora)
+- Prosty wizualizator amplitudy (`LinearProgressIndicator` + wartość RMS)
 
 ### Etap 3 — baza i ProgressJournal
 
