@@ -14,4 +14,7 @@
     <string name="practice_match_wrong">Błąd</string>
     <string name="practice_permission_required">Aby nasłuchiwać, zezwól na dostęp do mikrofonu.</string>
     <string name="practice_permission_grant">Zezwól na mikrofon</string>
+    <string name="journal_overall_accuracy">Łączna celność: %1$d%% (%2$d prób)</string>
+    <string name="journal_empty">Brak sesji. Ćwicz na ekranie „Ćwiczenia”, aby zapisać próby.</string>
+    <string name="journal_session_stats">Poprawne: %1$d / %2$d — %3$d%%</string>
 </resources>

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.instrumenttrainer.domain.model.Note
 import com.example.instrumenttrainer.domain.usecase.ManagePracticeSessionUseCase
 import com.example.instrumenttrainer.domain.usecase.ObserveDetectedNotesUseCase
+import com.example.instrumenttrainer.domain.usecase.RecordPracticeAttemptUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,15 +25,25 @@ data class PracticeRoomUiState(
 class PracticeRoomViewModel @Inject constructor(
     observeDetectedNotes: ObserveDetectedNotesUseCase,
     private val managePracticeSession: ManagePracticeSessionUseCase,
+    private val recordPracticeAttempt: RecordPracticeAttemptUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PracticeRoomUiState())
     val uiState: StateFlow<PracticeRoomUiState> = _uiState.asStateFlow()
 
+    private var currentSessionId: Long? = null
+
     init {
         viewModelScope.launch {
             observeDetectedNotes().collect { note ->
                 _uiState.update { it.copy(detectedNote = note) }
+                val sessionId = currentSessionId ?: return@collect
+                if (!_uiState.value.isListening) return@collect
+                recordPracticeAttempt(
+                    sessionId = sessionId,
+                    detected = note,
+                    target = _uiState.value.targetNote,
+                )
             }
         }
         viewModelScope.launch {
@@ -44,13 +55,17 @@ class PracticeRoomViewModel @Inject constructor(
 
     fun startListening() {
         if (_uiState.value.isListening) return
-        managePracticeSession.start()
-        _uiState.update { it.copy(isListening = true) }
+        viewModelScope.launch {
+            currentSessionId = recordPracticeAttempt.startSession()
+            managePracticeSession.start()
+            _uiState.update { it.copy(isListening = true) }
+        }
     }
 
     fun stopListening() {
         if (!_uiState.value.isListening) return
         managePracticeSession.stop()
+        currentSessionId = null
         _uiState.update { it.copy(isListening = false, amplitude = 0f) }
     }
 

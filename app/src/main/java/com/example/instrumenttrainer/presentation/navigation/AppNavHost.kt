@@ -72,7 +72,7 @@ fun InstrumentTrainerRoot() {
                 PracticeRoomScreen()
             }
             composable(NavRoutes.JOURNAL) {
-                ProgressJournalScreen(title = stringResource(R.string.screen_journal_title))
+                ProgressJournalScreen()
             }
             composable(NavRoutes.CHALLENGE) {
                 ChallengeModeScreen(title = stringResource(R.string.screen_challenge_title))

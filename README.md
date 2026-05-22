@@ -59,11 +59,11 @@ com.example.instrumenttrainer/
 - Wyświetlanie wykrytej nuty, kolor OK / błąd względem nuty docelowej
 - Prosty wizualizator amplitudy (`LinearProgressIndicator` + wartość RMS)
 
-### Etap 3 — baza i ProgressJournal
+### Etap 3 — baza i ProgressJournal (zrobione)
 
 - Room: sesje ćwiczeń, pojedyncze próby (nuty wykryta / docelowa / poprawność)
 - Zapis z Practice Room
-- Lista sesji, accuracy, prosty wykres lub podsumowanie
+- Lista sesji, accuracy, prosty wykres lub podsumowanie (`LinearProgressIndicator`)
 
 ### Etap 4 — ChallengeMode
 
