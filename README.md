@@ -1,6 +1,6 @@
 # InstrumentTrainer
 
-Aplikacja Android do treningu gry na instrumencie. Przechwytuje dźwięk z mikrofonu, wykrywa nutę (na razie mock) i pokazuje informację zwrotną użytkownikowi.
+Aplikacja Android do testowania rozpoznawania nut z mikrofonu. Użytkownik gra znaną nutę na instrumencie, wskazuje ją w aplikacji i porównuje z odczytem modelu (mock, później sieć TFLite).
 
 Stack: Kotlin, Jetpack Compose, MVVM, Hilt, Room, Coroutines.
 
@@ -11,6 +11,7 @@ com.example.instrumenttrainer/
 ├── di/
 ├── domain/
 │   ├── model/
+│   ├── classifier/
 │   ├── repository/
 │   └── usecase/
 ├── data/
@@ -21,70 +22,69 @@ com.example.instrumenttrainer/
 └── presentation/
     ├── navigation/
     ├── practice/
+    ├── recognition/
     ├── journal/
-    ├── challenge/
     ├── settings/
     └── components/
 ```
 
 ## Ekrany
 
-- **PracticeRoom** — mikrofon, wizualizator, wykryta nuta, porównanie z nutą docelową
-- **ProgressJournal** — historia sesji i statystyki z bazy
-- **ChallengeMode** — zadania typu „zagraj nutę X”
-- **Settings** — skala instrumentu, ustawienia mikrofonu (mock)
+- **PracticeRoom** — krótki podgląd nasłuchu, wybór nuty przez użytkownika, odczyt modelu
+- **RecognitionTest** — główny tryb testu sieci: sesja, zapis pojedynczych prób, statystyki na żywo
+- **ProgressJournal** — historia sesji i celność z bazy
+- **Settings** — placeholder (skala, czułość mikrofonu)
+
+## Pipeline (v1)
+
+1. Użytkownik zna nutę, którą zagrał na pianinie.
+2. W aplikacji wybiera: „Zagrałem: X”.
+3. Model (mock / TFLite) zwraca: „Wykryto: Y”.
+4. Porównanie X vs Y; opcjonalny zapis próby do Room.
+
+Quiz „zagraj nutę X od aplikacji” nie jest w v1 — odłożony.
 
 ## Etapy prac
 
 ### Etap 0 — fundament (zrobione)
 
 - Gradle: Hilt, Room (KSP), Navigation Compose, ViewModel, Coroutines
-- Klasa `Application` z `@HiltAndroidApp`
-- Manifest: `RECORD_AUDIO`
-- Nawigacja między czterema ekranami (placeholdery)
-- Pakiet / `applicationId`: `com.example.instrumenttrainer`
+- `Application` z `@HiltAndroidApp`, manifest `RECORD_AUDIO`, nawigacja
 
-### Etap 1 — audio i klasyfikacja (mock) (zrobione)
+### Etap 1 — audio i klasyfikacja (zrobione)
 
-- `NoteClassifier` (interfejs w domain)
-- `MockNoteClassifier` — losowa nuta co ~500 ms przez Flow
-- `AudioCaptureManager` — `AudioRecord`, pętla na `Dispatchers.Default`
-- Repozytorium / use case łączące capture z classifierem
-- Zatrzymanie capture przy zamknięciu ViewModelu
+- `NoteClassifier`, `MockNoteClassifier`, `AudioCaptureManager`
+- `AudioPracticeRepository` łączy capture z classifierem
 
-### Etap 2 — PracticeRoom (zrobione)
+### Etap 2 — PracticeRoom (zrobione, doprecyzowany)
 
-- Uprawnienie `RECORD_AUDIO` w runtime
-- `PracticeRoomViewModel` + Compose UI
-- Wyświetlanie wykrytej nuty, kolor OK / błąd względem nuty docelowej
-- Prosty wizualizator amplitudy (`LinearProgressIndicator` + wartość RMS)
+- Uprawnienie mikrofonu, ręczny start/stop nasłuchu
+- Użytkownik wybiera nutę (`userPlayedNote`), wyświetlana `detectedNote`
+- Porównanie i zapis próby na żądanie (nie przy każdym ticku mocka)
 
 ### Etap 3 — baza i ProgressJournal (zrobione)
 
-- Room: sesje ćwiczeń, pojedyncze próby (nuty wykryta / docelowa / poprawność)
-- Zapis z Practice Room
-- Lista sesji, accuracy, prosty wykres lub podsumowanie (`LinearProgressIndicator`)
+- Room: sesje, próby (`target` = nuta użytkownika, `detected` = output modelu)
+- Lista sesji i agregowana celność
 
-### Etap 4 — ChallengeMode
+### Etap 4 — RecognitionTest (zrobione)
 
-- Maszyna stanów: pytanie → nasłuch → ocena → następne zadanie
-- Ten sam pipeline audio co w Practice Room
-- Punkty / licznik; zapis prób do Room
+- Dedykowany ekran testu modelu (zakładka „Test”)
+- Sesja testowa, licznik prób i trafień w UI
+- Ten sam pipeline audio; zapis do Room po „Zapisz próbę”
 
 ### Etap 5 — Settings
 
-- Skala (np. C-dur, chromatyczna) — DataStore lub Room
-- Slider czułości (mock; na razie bez wpływu na classifier)
-- Skala ogranicza nuty w trybie Challenge
+- Skala instrumentu, czułość mikrofonu (mock)
+- DataStore lub Room
 
 ### Etap 6 — TensorFlow Lite
 
-- `TfliteNoteClassifier` implementujący `NoteClassifier`
-- Podmiana mocka w DI (module Hilt)
-- Pre/post-processing bufora audio według modelu
+- `TfliteNoteClassifier` zamiast mocka w Hilt
+- Pre/post-processing pod model
 
 ## Poza zakresem (na później)
 
+- Tryb quizu („zagraj nutę X”)
 - Nagrywanie w tle / Foreground Service
-- Analiza pitch bez modelu
 - Eksport danych, widgety

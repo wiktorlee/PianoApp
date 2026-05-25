@@ -1,4 +1,4 @@
-package com.example.instrumenttrainer.presentation.practice
+package com.example.instrumenttrainer.presentation.recognition
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,23 +15,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class PracticeRoomUiState(
+data class RecognitionTestUiState(
     val userPlayedNote: Note = NoteCatalog.defaultNote(),
     val detectedNote: Note? = null,
     val amplitude: Float = 0f,
     val isListening: Boolean = false,
-    val lastSaveMessage: String? = null,
+    val isSessionActive: Boolean = false,
+    val attemptsInSession: Int = 0,
+    val correctInSession: Int = 0,
+    val lastResultKey: String? = null,
 )
 
 @HiltViewModel
-class PracticeRoomViewModel @Inject constructor(
+class RecognitionTestViewModel @Inject constructor(
     observeDetectedNotes: ObserveDetectedNotesUseCase,
     private val managePracticeSession: ManagePracticeSessionUseCase,
     private val recordPracticeAttempt: RecordPracticeAttemptUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(PracticeRoomUiState())
-    val uiState: StateFlow<PracticeRoomUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(RecognitionTestUiState())
+    val uiState: StateFlow<RecognitionTestUiState> = _uiState.asStateFlow()
 
     private var currentSessionId: Long? = null
 
@@ -49,45 +52,61 @@ class PracticeRoomViewModel @Inject constructor(
     }
 
     fun setUserPlayedNote(note: Note) {
-        _uiState.update { it.copy(userPlayedNote = note, lastSaveMessage = null) }
+        _uiState.update { it.copy(userPlayedNote = note, lastResultKey = null) }
     }
 
-    fun startListening() {
-        if (_uiState.value.isListening) return
+    fun startTestSession() {
+        if (_uiState.value.isSessionActive) return
         viewModelScope.launch {
-            if (currentSessionId == null) {
-                currentSessionId = recordPracticeAttempt.startSession()
-            }
+            currentSessionId = recordPracticeAttempt.startSession()
             managePracticeSession.start()
-            _uiState.update { it.copy(isListening = true, lastSaveMessage = null) }
+            _uiState.update {
+                it.copy(
+                    isSessionActive = true,
+                    isListening = true,
+                    attemptsInSession = 0,
+                    correctInSession = 0,
+                    lastResultKey = null,
+                )
+            }
         }
     }
 
-    fun stopListening() {
-        if (!_uiState.value.isListening) return
+    fun endTestSession() {
         managePracticeSession.stop()
-        _uiState.update { it.copy(isListening = false, amplitude = 0f) }
+        currentSessionId = null
+        _uiState.update {
+            it.copy(
+                isSessionActive = false,
+                isListening = false,
+                amplitude = 0f,
+                lastResultKey = null,
+            )
+        }
     }
 
     fun saveAttempt() {
         val state = _uiState.value
+        if (!state.isSessionActive) return
         val detected = state.detectedNote
         if (detected == null) {
-            _uiState.update { it.copy(lastSaveMessage = SAVE_NEED_DETECTION) }
+            _uiState.update { it.copy(lastResultKey = RESULT_NEED_DETECTION) }
             return
         }
         viewModelScope.launch {
-            val sessionId = currentSessionId ?: recordPracticeAttempt.startSession().also {
-                currentSessionId = it
-            }
+            val sessionId = currentSessionId ?: return@launch
+            val isCorrect = detected == state.userPlayedNote
             recordPracticeAttempt(
                 sessionId = sessionId,
                 detected = detected,
                 target = state.userPlayedNote,
             )
-            val match = detected == state.userPlayedNote
             _uiState.update {
-                it.copy(lastSaveMessage = if (match) SAVE_OK else SAVE_MISMATCH)
+                it.copy(
+                    attemptsInSession = it.attemptsInSession + 1,
+                    correctInSession = it.correctInSession + if (isCorrect) 1 else 0,
+                    lastResultKey = if (isCorrect) RESULT_MATCH else RESULT_MISMATCH,
+                )
             }
         }
     }
@@ -98,8 +117,8 @@ class PracticeRoomViewModel @Inject constructor(
     }
 
     companion object {
-        const val SAVE_OK = "saved_ok"
-        const val SAVE_MISMATCH = "saved_mismatch"
-        const val SAVE_NEED_DETECTION = "saved_need_detection"
+        const val RESULT_MATCH = "result_match"
+        const val RESULT_MISMATCH = "result_mismatch"
+        const val RESULT_NEED_DETECTION = "result_need_detection"
     }
 }

@@ -1,4 +1,4 @@
-package com.example.instrumenttrainer.presentation.practice
+package com.example.instrumenttrainer.presentation.recognition
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -34,9 +34,9 @@ import com.example.instrumenttrainer.presentation.components.DetectionFeedback
 import com.example.instrumenttrainer.presentation.components.NoteSelector
 
 @Composable
-fun PracticeRoomScreen(
+fun RecognitionTestScreen(
     modifier: Modifier = Modifier,
-    viewModel: PracticeRoomViewModel = hiltViewModel(),
+    viewModel: RecognitionTestViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -56,7 +56,7 @@ fun PracticeRoomScreen(
     }
 
     DisposableEffect(Unit) {
-        onDispose { viewModel.stopListening() }
+        onDispose { viewModel.endTestSession() }
     }
 
     Column(
@@ -68,11 +68,11 @@ fun PracticeRoomScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = stringResource(R.string.screen_practice_title),
+            text = stringResource(R.string.screen_recognition_title),
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = stringResource(R.string.practice_hint),
+            text = stringResource(R.string.recognition_hint),
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -84,63 +84,64 @@ fun PracticeRoomScreen(
             return@Column
         }
 
-        NoteSelector(
-            selected = state.userPlayedNote,
-            onNoteChange = viewModel::setUserPlayedNote,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        RowListeningControls(
-            isListening = state.isListening,
-            onStart = viewModel::startListening,
-            onStop = viewModel::stopListening,
-        )
-
-        DetectionFeedback(
-            userPlayedNote = state.userPlayedNote,
-            detectedNote = state.detectedNote,
-            amplitude = state.amplitude,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        Button(
-            onClick = viewModel::saveAttempt,
-            enabled = state.isListening,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(text = stringResource(R.string.action_save_attempt))
-        }
-
-        state.lastSaveMessage?.let { key ->
+        if (!state.isSessionActive) {
+            Button(
+                onClick = viewModel::startTestSession,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = stringResource(R.string.recognition_start_session))
+            }
+        } else {
             Text(
-                text = saveMessageText(key),
-                style = MaterialTheme.typography.bodySmall,
+                text = stringResource(
+                    R.string.recognition_session_stats,
+                    state.correctInSession,
+                    state.attemptsInSession,
+                ),
+                style = MaterialTheme.typography.titleSmall,
             )
+
+            NoteSelector(
+                selected = state.userPlayedNote,
+                onNoteChange = viewModel::setUserPlayedNote,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            DetectionFeedback(
+                userPlayedNote = state.userPlayedNote,
+                detectedNote = state.detectedNote,
+                amplitude = state.amplitude,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Button(
+                onClick = viewModel::saveAttempt,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = stringResource(R.string.action_save_attempt))
+            }
+
+            state.lastResultKey?.let { key ->
+                Text(
+                    text = resultMessageText(key),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            OutlinedButton(
+                onClick = viewModel::endTestSession,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = stringResource(R.string.recognition_end_session))
+            }
         }
     }
 }
 
 @Composable
-private fun RowListeningControls(
-    isListening: Boolean,
-    onStart: () -> Unit,
-    onStop: () -> Unit,
-) {
-    if (isListening) {
-        OutlinedButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(R.string.action_stop_listening))
-        }
-    } else {
-        Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(R.string.action_start_listening))
-        }
-    }
-}
-
-@Composable
-private fun saveMessageText(key: String): String = when (key) {
-    PracticeRoomViewModel.SAVE_OK -> stringResource(R.string.practice_save_ok)
-    PracticeRoomViewModel.SAVE_MISMATCH -> stringResource(R.string.practice_save_mismatch)
-    PracticeRoomViewModel.SAVE_NEED_DETECTION -> stringResource(R.string.practice_save_need_detection)
+private fun resultMessageText(key: String): String = when (key) {
+    RecognitionTestViewModel.RESULT_MATCH -> stringResource(R.string.recognition_result_match)
+    RecognitionTestViewModel.RESULT_MISMATCH -> stringResource(R.string.recognition_result_mismatch)
+    RecognitionTestViewModel.RESULT_NEED_DETECTION -> stringResource(R.string.recognition_result_need_detection)
     else -> key
 }

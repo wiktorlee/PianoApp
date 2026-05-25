@@ -16,22 +16,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.instrumenttrainer.R
-import com.example.instrumenttrainer.presentation.challenge.ChallengeModeScreen
 import com.example.instrumenttrainer.presentation.journal.ProgressJournalScreen
 import com.example.instrumenttrainer.presentation.practice.PracticeRoomScreen
+import com.example.instrumenttrainer.presentation.recognition.RecognitionTestScreen
 import com.example.instrumenttrainer.presentation.settings.SettingsScreen
 
 data class TopLevelDestination(
     val route: String,
     @StringRes val labelRes: Int,
-    @StringRes val titleRes: Int,
 )
 
 private val topLevelDestinations = listOf(
-    TopLevelDestination(NavRoutes.PRACTICE, R.string.nav_practice, R.string.screen_practice_title),
-    TopLevelDestination(NavRoutes.JOURNAL, R.string.nav_journal, R.string.screen_journal_title),
-    TopLevelDestination(NavRoutes.CHALLENGE, R.string.nav_challenge, R.string.screen_challenge_title),
-    TopLevelDestination(NavRoutes.SETTINGS, R.string.nav_settings, R.string.screen_settings_title),
+    TopLevelDestination(NavRoutes.PRACTICE, R.string.nav_practice),
+    TopLevelDestination(NavRoutes.RECOGNITION, R.string.nav_recognition),
+    TopLevelDestination(NavRoutes.JOURNAL, R.string.nav_journal),
+    TopLevelDestination(NavRoutes.SETTINGS, R.string.nav_settings),
 )
 
 @Composable
@@ -71,11 +70,11 @@ fun InstrumentTrainerRoot() {
             composable(NavRoutes.PRACTICE) {
                 PracticeRoomScreen()
             }
+            composable(NavRoutes.RECOGNITION) {
+                RecognitionTestScreen()
+            }
             composable(NavRoutes.JOURNAL) {
                 ProgressJournalScreen()
-            }
-            composable(NavRoutes.CHALLENGE) {
-                ChallengeModeScreen(title = stringResource(R.string.screen_challenge_title))
             }
             composable(NavRoutes.SETTINGS) {
                 SettingsScreen(title = stringResource(R.string.screen_settings_title))
