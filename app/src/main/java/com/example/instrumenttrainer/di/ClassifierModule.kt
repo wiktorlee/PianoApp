@@ -1,18 +1,28 @@
 package com.example.instrumenttrainer.di
 
 import com.example.instrumenttrainer.data.classifier.MockNoteClassifier
+import com.example.instrumenttrainer.data.classifier.TfliteNoteClassifier
 import com.example.instrumenttrainer.domain.classifier.NoteClassifier
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class ClassifierModule {
+object ClassifierModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindNoteClassifier(impl: MockNoteClassifier): NoteClassifier
+    fun provideNoteClassifier(
+        tfliteNoteClassifier: TfliteNoteClassifier,
+        mockNoteClassifier: MockNoteClassifier,
+    ): NoteClassifier {
+        return if (tfliteNoteClassifier.isAvailable) {
+            tfliteNoteClassifier
+        } else {
+            mockNoteClassifier
+        }
+    }
 }

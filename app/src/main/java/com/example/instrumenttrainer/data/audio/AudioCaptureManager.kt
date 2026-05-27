@@ -23,13 +23,17 @@ class AudioCaptureManager @Inject constructor() {
     private var audioRecord: AudioRecord? = null
     private var captureJob: Job? = null
 
+    var sampleRate: Int = 0
+        private set
+
     private val _frames = MutableSharedFlow<AudioFrame>(extraBufferCapacity = 1)
     val frames: SharedFlow<AudioFrame> = _frames.asSharedFlow()
 
     fun start() {
         if (captureJob?.isActive == true) return
 
-        val (record, bufferSizeBytes) = buildInitializedAudioRecord() ?: return
+        val (record, bufferSizeBytes, selectedRate) = buildInitializedAudioRecord() ?: return
+        sampleRate = selectedRate
         audioRecord = record
         record.startRecording()
 
@@ -39,7 +43,7 @@ class AudioCaptureManager @Inject constructor() {
             while (isActive) {
                 val read = record.read(buffer, 0, buffer.size)
                 if (read > 0) {
-                    _frames.emit(AudioFrame(buffer.copyOf(read), read))
+                    _frames.emit(AudioFrame(buffer.copyOf(read), read, selectedRate))
                 }
             }
         }
@@ -56,13 +60,14 @@ class AudioCaptureManager @Inject constructor() {
             release()
         }
         audioRecord = null
+        sampleRate = 0
     }
 
     /**
      * 44.1 kHz is not supported on every device/emulator for MIC capture.
      * Try common rates in order until [AudioRecord] initializes.
      */
-    private fun buildInitializedAudioRecord(): Pair<AudioRecord, Int>? {
+    private fun buildInitializedAudioRecord(): Triple<AudioRecord, Int, Int>? {
         for (rate in PREFERRED_SAMPLE_RATES) {
             val minBuf = AudioRecord.getMinBufferSize(
                 rate,
@@ -79,7 +84,7 @@ class AudioCaptureManager @Inject constructor() {
                 bufferSizeBytes,
             )
             if (record.state == AudioRecord.STATE_INITIALIZED) {
-                return Pair(record, bufferSizeBytes)
+                return Triple(record, bufferSizeBytes, rate)
             }
             record.release()
         }
@@ -87,7 +92,7 @@ class AudioCaptureManager @Inject constructor() {
     }
 
     companion object {
-        private val PREFERRED_SAMPLE_RATES = intArrayOf(16_000, 22_050, 44_100)
+        private val PREFERRED_SAMPLE_RATES = intArrayOf(22_050, 16_000, 44_100)
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
         private const val BYTES_PER_FRAME = 2

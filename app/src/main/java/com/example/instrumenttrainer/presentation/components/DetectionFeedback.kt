@@ -21,7 +21,7 @@ fun DetectionFeedback(
     amplitude: Float,
     modifier: Modifier = Modifier,
 ) {
-    val isMatch = detectedNote != null && detectedNote == userPlayedNote
+    val isMatch = detectedNote != null && detectedNote.samePitchClass(userPlayedNote)
     val compareColor = when {
         detectedNote == null -> MaterialTheme.colorScheme.onSurface
         isMatch -> Color(0xFF2E7D32)
@@ -36,7 +36,7 @@ fun DetectionFeedback(
         Text(
             text = stringResource(
                 R.string.feedback_detected_note,
-                detectedNote?.displayName ?: "—",
+                detectedNote?.name ?: "—",
             ),
             style = MaterialTheme.typography.displaySmall,
             color = compareColor,

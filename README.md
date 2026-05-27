@@ -1,6 +1,6 @@
 # InstrumentTrainer
 
-Aplikacja Android do testowania rozpoznawania nut z mikrofonu. Użytkownik gra znaną nutę na instrumencie, wskazuje ją w aplikacji i porównuje z odczytem modelu (mock, później sieć TFLite).
+Aplikacja Android do testowania rozpoznawania nut z mikrofonu. Użytkownik gra znaną nutę na instrumencie, wskazuje ją w aplikacji i porównuje z odczytem modelu (TFLite z projektu PianoNotesNeuralNetwork; fallback: mock).
 
 Stack: Kotlin, Jetpack Compose, MVVM, Hilt, Room, Coroutines.
 
@@ -73,15 +73,24 @@ Quiz „zagraj nutę X od aplikacji” nie jest w v1 — odłożony.
 - Sesja testowa, licznik prób i trafień w UI
 - Ten sam pipeline audio; zapis do Room po „Zapisz próbę”
 
-### Etap 5 — Settings
+### Etap 5 — Settings (odłożony)
 
 - Skala instrumentu, czułość mikrofonu (mock)
 - DataStore lub Room
 
-### Etap 6 — TensorFlow Lite
+### Etap 6 — TensorFlow Lite (zrobione)
 
-- `TfliteNoteClassifier` zamiast mocka w Hilt
-- Pre/post-processing pod model
+- `TfliteNoteClassifier` + preprocessing mel (zgodny z `preprocess.py`)
+- Hilt: TFLite gdy jest `assets/piano_cnn.tflite`, inaczej `MockNoteClassifier`
+- `assets/model_metadata.json` — parametry wejścia i mean/std z treningu
+- Selektor 12 klas (C…B), porównanie po wysokości (bez oktawy w modelu)
+
+**Podpięcie modelu:**
+
+1. W `PianoNotesNeuralNetwork`: `python scripts/train.py` (powstaje `models/piano_cnn.tflite`).
+2. Eksport metadanych: `python scripts/export_android_metadata.py --out ../PianoApp/app/src/main/assets/model_metadata.json`
+3. Skopiuj `models/piano_cnn.tflite` → `PianoApp/app/src/main/assets/piano_cnn.tflite`
+4. Zbuduj i uruchom aplikację na urządzeniu z mikrofonem.
 
 ## Poza zakresem (na później)
 

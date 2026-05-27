@@ -1,0 +1,24 @@
+{
+  "modelFile": "piano_cnn.tflite",
+  "sampleRate": 22050,
+  "durationSec": 1.0,
+  "nMels": 128,
+  "nFft": 2048,
+  "hopLength": 512,
+  "inputMean": 0.0,
+  "inputStd": 1.0,
+  "classLabels": [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B"
+  ]
+}

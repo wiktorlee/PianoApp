@@ -11,7 +11,8 @@
     <string name="practice_hint">Zagraj nutę, wybierz ją poniżej i porównaj z odczytem modelu. Zapisz próbę ręcznie.</string>
     <string name="recognition_hint">Sesja testowa sieci: zagraj nutę, wskaż ją w aplikacji, sprawdź wykrycie i zapisz próbę.</string>
     <string name="note_selector_pitch">Zagrałem:</string>
-    <string name="note_selector_octave">Oktawa: %1$d</string>
+    <string name="note_selector_pitch_hint">Model rozpoznaje wysokość (12 klas), nie oktawę.</string>
+    <string name="note_selector_octave">Oktawa (etykieta): %1$d</string>
     <string name="feedback_user_note">Zagrałem: %1$s</string>
     <string name="feedback_detected_note">Wykryto: %1$s</string>
     <string name="feedback_match_ok">Zgodne z modelem</string>

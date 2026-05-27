@@ -5,4 +5,6 @@ data class Note(
     val octave: Int,
 ) {
     val displayName: String get() = "$name$octave"
+
+    fun samePitchClass(other: Note): Boolean = name == other.name
 }

@@ -10,5 +10,5 @@ interface NoteClassifier {
 
     fun stop()
 
-    fun onAudioFrame(buffer: ShortArray, length: Int)
+    fun onAudioFrame(buffer: ShortArray, length: Int, sampleRate: Int)
 }

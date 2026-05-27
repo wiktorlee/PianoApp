@@ -85,7 +85,7 @@ class PracticeRoomViewModel @Inject constructor(
                 detected = detected,
                 target = state.userPlayedNote,
             )
-            val match = detected == state.userPlayedNote
+            val match = detected.samePitchClass(state.userPlayedNote)
             _uiState.update {
                 it.copy(lastSaveMessage = if (match) SAVE_OK else SAVE_MISMATCH)
             }

@@ -40,7 +40,7 @@ class AudioPracticeRepositoryImpl @Inject constructor(
 
         sessionJob = scope.launch {
             audioCaptureManager.frames.collect { frame ->
-                noteClassifier.onAudioFrame(frame.buffer, frame.length)
+                noteClassifier.onAudioFrame(frame.buffer, frame.length, frame.sampleRate)
                 _amplitude.value = computeAmplitude(frame.buffer, frame.length)
             }
         }

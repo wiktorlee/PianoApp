@@ -36,6 +36,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    androidResources {
+        noCompress += "tflite"
+    }
 }
 
 kotlin {
@@ -53,6 +57,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.tensorflow.lite)
     ksp(libs.hilt.compiler)
     ksp(libs.room.compiler)
     implementation(platform(libs.androidx.compose.bom))

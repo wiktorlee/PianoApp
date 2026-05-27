@@ -95,7 +95,7 @@ class RecognitionTestViewModel @Inject constructor(
         }
         viewModelScope.launch {
             val sessionId = currentSessionId ?: return@launch
-            val isCorrect = detected == state.userPlayedNote
+            val isCorrect = detected.samePitchClass(state.userPlayedNote)
             recordPracticeAttempt(
                 sessionId = sessionId,
                 detected = detected,

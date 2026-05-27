@@ -42,12 +42,12 @@ class MockNoteClassifier @Inject constructor() : NoteClassifier {
         emitJob = null
     }
 
-    override fun onAudioFrame(buffer: ShortArray, length: Int) {
-        // Mock ignores audio; TfliteNoteClassifier will use frames in a later stage.
+    override fun onAudioFrame(buffer: ShortArray, length: Int, sampleRate: Int) {
+        // Mock ignores audio; TfliteNoteClassifier uses frames for live inference.
     }
 
     private fun randomNote(): Note = Note(
-        name = NoteCatalog.NOTE_NAMES.random(),
+        name = NoteCatalog.PITCH_CLASS_NAMES.random(),
         octave = Random.nextInt(NoteCatalog.MIN_OCTAVE, NoteCatalog.MAX_OCTAVE + 1),
     )
 

@@ -2,6 +2,8 @@ package com.example.instrumenttrainer.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +20,7 @@ import com.example.instrumenttrainer.R
 import com.example.instrumenttrainer.domain.model.Note
 import com.example.instrumenttrainer.domain.model.NoteCatalog
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NoteSelector(
     selected: Note,
@@ -29,13 +32,14 @@ fun NoteSelector(
             text = stringResource(R.string.note_selector_pitch),
             style = MaterialTheme.typography.labelLarge,
         )
-        Row(
+        FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            NoteCatalog.NOTE_NAMES.forEach { name ->
+            NoteCatalog.PITCH_CLASS_NAMES.forEach { name ->
                 FilterChip(
                     selected = selected.name == name,
                     onClick = { onNoteChange(selected.copy(name = name)) },
@@ -43,6 +47,11 @@ fun NoteSelector(
                 )
             }
         }
+        Text(
+            text = stringResource(R.string.note_selector_pitch_hint),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 8.dp),
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
