@@ -5,8 +5,10 @@
   "nMels": 128,
   "nFft": 2048,
   "hopLength": 512,
-  "inputMean": 0.0,
-  "inputStd": 1.0,
+  "inputMean": -63.54928207397461,
+  "inputStd": 18.906681060791016,
+  "pitchShiftSemitones": -1.47,
+  "pitchClassOffset": 0,
   "classLabels": [
     "C",
     "C#",

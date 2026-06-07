@@ -92,7 +92,7 @@ class AudioCaptureManager @Inject constructor() {
     }
 
     companion object {
-        private val PREFERRED_SAMPLE_RATES = intArrayOf(22_050, 16_000, 44_100)
+        private val PREFERRED_SAMPLE_RATES = intArrayOf(22_050, 44_100, 16_000)
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
         private const val BYTES_PER_FRAME = 2

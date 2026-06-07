@@ -15,12 +15,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val MIN_SAVE_AMPLITUDE = 0.015f
+
 data class PracticeRoomUiState(
     val userPlayedNote: Note = NoteCatalog.defaultNote(),
     val detectedNote: Note? = null,
     val amplitude: Float = 0f,
     val isListening: Boolean = false,
-    val lastSaveMessage: String? = null,
+    val saveMessage: String? = null,
 )
 
 @HiltViewModel
@@ -48,35 +50,39 @@ class PracticeRoomViewModel @Inject constructor(
         }
     }
 
-    fun setUserPlayedNote(note: Note) {
-        _uiState.update { it.copy(userPlayedNote = note, lastSaveMessage = null) }
+    fun setUserPlayedPitch(name: String) {
+        _uiState.update {
+            it.copy(
+                userPlayedNote = it.userPlayedNote.copy(name = name),
+                saveMessage = null,
+            )
+        }
     }
 
     fun startListening() {
         if (_uiState.value.isListening) return
         viewModelScope.launch {
-            if (currentSessionId == null) {
-                currentSessionId = recordPracticeAttempt.startSession()
-            }
+            currentSessionId = recordPracticeAttempt.startSession()
             managePracticeSession.start()
-            _uiState.update { it.copy(isListening = true, lastSaveMessage = null) }
+            _uiState.update { it.copy(isListening = true, saveMessage = null) }
         }
     }
 
     fun stopListening() {
         if (!_uiState.value.isListening) return
         managePracticeSession.stop()
+        currentSessionId = null
         _uiState.update { it.copy(isListening = false, amplitude = 0f) }
     }
 
-    fun saveAttempt() {
-        val state = _uiState.value
-        val detected = state.detectedNote
-        if (detected == null) {
-            _uiState.update { it.copy(lastSaveMessage = SAVE_NEED_DETECTION) }
-            return
-        }
+    fun saveCurrentAttempt(onSaved: () -> Unit, onNothingToSave: () -> Unit) {
         viewModelScope.launch {
+            val state = _uiState.value
+            val detected = state.detectedNote
+            if (detected == null || state.amplitude < MIN_SAVE_AMPLITUDE) {
+                onNothingToSave()
+                return@launch
+            }
             val sessionId = currentSessionId ?: recordPracticeAttempt.startSession().also {
                 currentSessionId = it
             }
@@ -85,21 +91,12 @@ class PracticeRoomViewModel @Inject constructor(
                 detected = detected,
                 target = state.userPlayedNote,
             )
-            val match = detected.samePitchClass(state.userPlayedNote)
-            _uiState.update {
-                it.copy(lastSaveMessage = if (match) SAVE_OK else SAVE_MISMATCH)
-            }
+            onSaved()
         }
     }
 
     override fun onCleared() {
         managePracticeSession.stop()
         super.onCleared()
-    }
-
-    companion object {
-        const val SAVE_OK = "saved_ok"
-        const val SAVE_MISMATCH = "saved_mismatch"
-        const val SAVE_NEED_DETECTION = "saved_need_detection"
     }
 }

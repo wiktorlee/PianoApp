@@ -1,89 +1,65 @@
 package com.example.instrumenttrainer.presentation.navigation
 
-import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.instrumenttrainer.R
+import com.example.instrumenttrainer.presentation.components.AppScreenBackground
 import com.example.instrumenttrainer.presentation.journal.ProgressJournalScreen
 import com.example.instrumenttrainer.presentation.practice.PracticeRoomScreen
-import com.example.instrumenttrainer.presentation.recognition.RecognitionTestScreen
 import com.example.instrumenttrainer.presentation.settings.SettingsScreen
-
-data class TopLevelDestination(
-    val route: String,
-    @StringRes val labelRes: Int,
-)
-
-private val topLevelDestinations = listOf(
-    TopLevelDestination(NavRoutes.PRACTICE, R.string.nav_practice),
-    TopLevelDestination(NavRoutes.RECOGNITION, R.string.nav_recognition),
-    TopLevelDestination(NavRoutes.JOURNAL, R.string.nav_journal),
-    TopLevelDestination(NavRoutes.SETTINGS, R.string.nav_settings),
-)
 
 @Composable
 fun InstrumentTrainerRoot() {
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                topLevelDestinations.forEach { destination ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
+    Box(modifier = Modifier.fillMaxSize()) {
+        AppScreenBackground()
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            bottomBar = {
+                AppBottomBar(
+                    currentRoute = currentRoute,
+                    onTabSelected = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
                             }
-                        },
-                        icon = { IconPlaceholder() },
-                        label = { Text(stringResource(destination.labelRes)) },
-                    )
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
+            },
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = NavRoutes.PRACTICE,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                composable(NavRoutes.PRACTICE) {
+                    PracticeRoomScreen()
                 }
-            }
-        },
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = NavRoutes.PRACTICE,
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            composable(NavRoutes.PRACTICE) {
-                PracticeRoomScreen()
-            }
-            composable(NavRoutes.RECOGNITION) {
-                RecognitionTestScreen()
-            }
-            composable(NavRoutes.JOURNAL) {
-                ProgressJournalScreen()
-            }
-            composable(NavRoutes.SETTINGS) {
-                SettingsScreen(title = stringResource(R.string.screen_settings_title))
+                composable(NavRoutes.JOURNAL) {
+                    ProgressJournalScreen()
+                }
+                composable(NavRoutes.SETTINGS) {
+                    SettingsScreen()
+                }
             }
         }
     }
-}
-
-@Composable
-private fun IconPlaceholder() {
-    Text(text = "•")
 }

@@ -1,0 +1,125 @@
+package com.example.instrumenttrainer.presentation.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.example.instrumenttrainer.ui.theme.BrandCoral
+import com.example.instrumenttrainer.ui.theme.BrandGraphite
+import com.example.instrumenttrainer.ui.theme.BrandGraphiteTrack
+
+@Composable
+fun NoteDetectionRing(
+    noteText: String,
+    sublabel: String?,
+    progress: Float,
+    ringColor: Color,
+    modifier: Modifier = Modifier,
+    ringSize: Dp = 220.dp,
+    strokeWidth: Dp = 10.dp,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier.size(ringSize),
+            contentAlignment = Alignment.Center,
+        ) {
+            Canvas(modifier = Modifier.matchParentSize()) {
+                val stroke = strokeWidth.toPx()
+                val diameter = size.minDimension - stroke
+                val topLeft = Offset(
+                    (size.width - diameter) / 2f,
+                    (size.height - diameter) / 2f,
+                )
+                val arcSize = Size(diameter, diameter)
+
+                drawArc(
+                    color = BrandGraphiteTrack,
+                    startAngle = 0f,
+                    sweepAngle = 360f,
+                    useCenter = false,
+                    topLeft = topLeft,
+                    size = arcSize,
+                    style = Stroke(width = stroke),
+                )
+                drawArc(
+                    color = ringColor,
+                    startAngle = -90f,
+                    sweepAngle = 360f * progress.coerceIn(0f, 1f),
+                    useCenter = false,
+                    topLeft = topLeft,
+                    size = arcSize,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = noteText,
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                )
+                if (sublabel != null) {
+                    Text(
+                        text = sublabel,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = BrandGraphite,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 4.dp),
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AmplitudeBar(
+    amplitude: Float,
+    modifier: Modifier = Modifier,
+    height: Dp = 14.dp,
+) {
+    val clamped = amplitude.coerceIn(0f, 1f)
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height),
+    ) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val corner = size.height / 2f
+            drawRoundRect(
+                color = BrandGraphiteTrack,
+                cornerRadius = CornerRadius(corner, corner),
+            )
+            if (clamped > 0f) {
+                drawRoundRect(
+                    color = BrandCoral,
+                    size = Size(size.width * clamped, size.height),
+                    cornerRadius = CornerRadius(corner, corner),
+                )
+            }
+        }
+    }
+}

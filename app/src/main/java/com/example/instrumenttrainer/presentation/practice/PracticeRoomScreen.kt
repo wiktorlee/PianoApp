@@ -5,18 +5,19 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,8 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.instrumenttrainer.R
+import com.example.instrumenttrainer.presentation.components.AppScreenHeader
 import com.example.instrumenttrainer.presentation.components.DetectionFeedback
-import com.example.instrumenttrainer.presentation.components.NoteSelector
+import com.example.instrumenttrainer.presentation.components.PitchClassSelector
+import com.example.instrumenttrainer.presentation.components.SurfaceCard
+import com.example.instrumenttrainer.ui.theme.BrandCoral
 
 @Composable
 fun PracticeRoomScreen(
@@ -40,6 +44,7 @@ fun PracticeRoomScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var saveFeedback by remember { mutableStateOf<String?>(null) }
 
     var hasAudioPermission by remember {
         mutableStateOf(
@@ -55,6 +60,18 @@ fun PracticeRoomScreen(
         hasAudioPermission = granted
     }
 
+    LaunchedEffect(Unit) {
+        if (!hasAudioPermission) {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+    LaunchedEffect(hasAudioPermission) {
+        if (hasAudioPermission) {
+            viewModel.startListening()
+        } else {
+            viewModel.stopListening()
+        }
+    }
     DisposableEffect(Unit) {
         onDispose { viewModel.stopListening() }
     }
@@ -62,85 +79,98 @@ fun PracticeRoomScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = stringResource(R.string.screen_practice_title),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = stringResource(R.string.practice_hint),
-            style = MaterialTheme.typography.bodyMedium,
+        AppScreenHeader(
+            title = stringResource(R.string.screen_main_title),
+            subtitle = stringResource(R.string.screen_main_subtitle),
         )
 
         if (!hasAudioPermission) {
-            Text(text = stringResource(R.string.practice_permission_required))
-            Button(onClick = { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) }) {
-                Text(text = stringResource(R.string.practice_permission_grant))
+            SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(R.string.practice_permission_required),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Button(
+                    onClick = { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandCoral),
+                ) {
+                    Text(text = stringResource(R.string.practice_permission_grant))
+                }
             }
             return@Column
         }
 
-        NoteSelector(
-            selected = state.userPlayedNote,
-            onNoteChange = viewModel::setUserPlayedNote,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        RowListeningControls(
-            isListening = state.isListening,
-            onStart = viewModel::startListening,
-            onStop = viewModel::stopListening,
-        )
-
-        DetectionFeedback(
-            userPlayedNote = state.userPlayedNote,
-            detectedNote = state.detectedNote,
-            amplitude = state.amplitude,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        Button(
-            onClick = viewModel::saveAttempt,
-            enabled = state.isListening,
-            modifier = Modifier.fillMaxWidth(),
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
-            Text(text = stringResource(R.string.action_save_attempt))
+            DetectionFeedback(
+                userPlayedNote = state.userPlayedNote,
+                detectedNote = state.detectedNote,
+                amplitude = state.amplitude,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
-        state.lastSaveMessage?.let { key ->
+        SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+            PitchClassSelector(
+                selectedName = state.userPlayedNote.name,
+                onPitchSelected = viewModel::setUserPlayedPitch,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Button(
+            onClick = {
+                viewModel.saveCurrentAttempt(
+                    onSaved = {
+                        saveFeedback = context.getString(R.string.practice_save_success)
+                    },
+                    onNothingToSave = {
+                        saveFeedback = context.getString(R.string.practice_save_empty)
+                    },
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = BrandCoral),
+        ) {
+            Text(text = stringResource(R.string.practice_save_attempt))
+        }
+
+        if (saveFeedback != null) {
             Text(
-                text = saveMessageText(key),
-                style = MaterialTheme.typography.bodySmall,
+                text = saveFeedback!!,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        OutlinedButton(
+            onClick = {
+                if (state.isListening) {
+                    viewModel.stopListening()
+                } else {
+                    viewModel.startListening()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = if (state.isListening) {
+                    stringResource(R.string.practice_stop_listening)
+                } else {
+                    stringResource(R.string.practice_start_listening)
+                },
             )
         }
     }
-}
-
-@Composable
-private fun RowListeningControls(
-    isListening: Boolean,
-    onStart: () -> Unit,
-    onStop: () -> Unit,
-) {
-    if (isListening) {
-        OutlinedButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(R.string.action_stop_listening))
-        }
-    } else {
-        Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(R.string.action_start_listening))
-        }
-    }
-}
-
-@Composable
-private fun saveMessageText(key: String): String = when (key) {
-    PracticeRoomViewModel.SAVE_OK -> stringResource(R.string.practice_save_ok)
-    PracticeRoomViewModel.SAVE_MISMATCH -> stringResource(R.string.practice_save_mismatch)
-    PracticeRoomViewModel.SAVE_NEED_DETECTION -> stringResource(R.string.practice_save_need_detection)
-    else -> key
 }

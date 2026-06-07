@@ -2,6 +2,8 @@ package com.example.instrumenttrainer.data.classifier
 
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
@@ -149,13 +151,38 @@ internal class MelSpectrogramPreprocessor(
                     filter[bin] = (right - bin).toFloat() / (right - center)
                 }
             }
+            val enorm = 2f / (hzPoints[melIndex + 2] - hzPoints[melIndex])
+            for (bin in filter.indices) {
+                filter[bin] *= enorm
+            }
             filter
         }
     }
 
-    private fun hzToMel(hz: Float): Float = (2595f * log10(1f + hz / 700f))
+    /** Slaney mel — domyślnie w librosa (htk=False). */
+    private fun hzToMel(hz: Float): Float {
+        val fSp = 200f / 3f
+        val minLogHz = 1000f
+        val minLogMel = minLogHz / fSp
+        val logStep = ln(6.4f) / 27f
+        return if (hz >= minLogHz) {
+            minLogMel + ln(hz / minLogHz) / logStep
+        } else {
+            hz / fSp
+        }
+    }
 
-    private fun melToHz(mel: Float): Float = (700f * (10f.pow(mel / 2595f) - 1f))
+    private fun melToHz(mel: Float): Float {
+        val fSp = 200f / 3f
+        val minLogHz = 1000f
+        val minLogMel = minLogHz / fSp
+        val logStep = ln(6.4f) / 27f
+        return if (mel >= minLogMel) {
+            minLogHz * exp(logStep * (mel - minLogMel))
+        } else {
+            fSp * mel
+        }
+    }
 
     private fun fftInPlace(
         input: FloatArray,

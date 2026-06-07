@@ -1,0 +1,98 @@
+package com.example.instrumenttrainer.presentation.navigation
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.example.instrumenttrainer.R
+import com.example.instrumenttrainer.ui.theme.BrandGraphiteSoft
+import com.example.instrumenttrainer.ui.theme.BrandMistBg
+
+private data class BottomTab(
+    val route: String,
+    val labelRes: Int,
+    val icon: ImageVector,
+)
+
+private val tabs = listOf(
+    BottomTab(NavRoutes.PRACTICE, R.string.tab_practice, Icons.Outlined.Mic),
+    BottomTab(NavRoutes.JOURNAL, R.string.tab_journal, Icons.Outlined.History),
+    BottomTab(NavRoutes.SETTINGS, R.string.tab_settings, Icons.Outlined.Settings),
+)
+
+@Composable
+fun AppBottomBar(
+    currentRoute: String?,
+    onTabSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = BrandMistBg,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            tabs.forEach { tab ->
+                val selected = currentRoute == tab.route
+                Surface(
+                    onClick = { onTabSelected(tab.route) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (selected) BrandGraphiteSoft else BrandMistBg,
+                    tonalElevation = 0.dp,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = tab.icon,
+                            contentDescription = null,
+                            tint = if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                        Text(
+                            text = stringResource(tab.labelRes),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            modifier = Modifier.padding(start = 6.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

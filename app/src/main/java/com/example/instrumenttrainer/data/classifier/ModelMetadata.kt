@@ -12,6 +12,9 @@ data class ModelMetadata(
     val inputMean: Float,
     val inputStd: Float,
     val classLabels: List<String>,
+    val pitchClassOffset: Int = 0,
+    /** Przesunięcie wysokości dźwięku przed mel (ujemne = obniż). */
+    val pitchShiftSemitones: Float = 0f,
 ) {
     val targetSampleCount: Int
         get() = (sampleRate * durationSec).toInt()
@@ -45,6 +48,8 @@ data class ModelMetadata(
                 inputMean = json.getDouble("inputMean").toFloat(),
                 inputStd = json.getDouble("inputStd").toFloat(),
                 classLabels = labels,
+                pitchClassOffset = json.optInt("pitchClassOffset", 0),
+                pitchShiftSemitones = json.optDouble("pitchShiftSemitones", 0.0).toFloat(),
             )
         }
     }

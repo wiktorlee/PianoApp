@@ -153,8 +153,8 @@ class TfliteNoteClassifier @Inject constructor(
         val input = inputBuffer ?: return
         val output = outputBuffer ?: return
 
-        val window =         val targetCount = currentMetadata.targetSampleCount
-        synchronized(audioRingBuffer) {
+        val targetCount = currentMetadata.targetSampleCount
+        val window = synchronized(audioRingBuffer) {
             if (audioRingBuffer.size < targetCount) {
                 return
             }
@@ -163,7 +163,13 @@ class TfliteNoteClassifier @Inject constructor(
             }
         }
 
-        val features = currentPreprocessor.preprocess(window)
+        val rms = computeRms(window)
+        if (rms < MIN_SIGNAL_RMS) {
+            return
+        }
+
+        val pitchShifted = AudioResampler.pitchShift(window, currentMetadata.pitchShiftSemitones)
+        val features = currentPreprocessor.preprocess(pitchShifted)
         if (features.size != input.capacity() / Float.SIZE_BYTES) {
             Log.w(TAG, "Niezgodny rozmiar cech: ${features.size}")
             return
@@ -174,12 +180,22 @@ class TfliteNoteClassifier @Inject constructor(
         input.rewind()
 
         currentInterpreter.run(input, output)
-        val classIndex = stabilizedClassIndex(output[0])
-        val label = currentMetadata.classLabels.getOrNull(classIndex) ?: return
+        val probabilities = output[0]
+        val rawIndex = stabilizedClassIndex(probabilities)
+        if (probabilities[rawIndex] < MIN_CONFIDENCE) {
+            return
+        }
+        val correctedIndex = normalizeClassIndex(rawIndex + currentMetadata.pitchClassOffset)
+        val label = currentMetadata.classLabels.getOrNull(correctedIndex) ?: return
         val note = Note(name = label, octave = NoteCatalog.DEFAULT_DETECTED_OCTAVE)
         scope.launch {
             _detectedNotes.emit(note)
         }
+    }
+
+    private fun normalizeClassIndex(index: Int): Int {
+        val size = metadata?.classLabels?.size ?: 12
+        return ((index % size) + size) % size
     }
 
     private fun stabilizedClassIndex(probabilities: FloatArray): Int {
@@ -192,10 +208,22 @@ class TfliteNoteClassifier @Inject constructor(
             ?: bestIndex
     }
 
+    private fun computeRms(window: FloatArray): Float {
+        if (window.isEmpty()) return 0f
+        var sum = 0.0
+        for (sample in window) {
+            val value = sample.toDouble()
+            sum += value * value
+        }
+        return kotlin.math.sqrt(sum / window.size).toFloat()
+    }
+
     companion object {
         private const val TAG = "TfliteNoteClassifier"
         private const val INFERENCE_INTERVAL_MS = 400L
         private const val INPUT_CHANNELS = 1
-        private const val STABILIZATION_WINDOW = 3
+        private const val STABILIZATION_WINDOW = 5
+        private const val MIN_SIGNAL_RMS = 0.015f
+        private const val MIN_CONFIDENCE = 0.35f
     }
 }

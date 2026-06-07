@@ -18,7 +18,7 @@ class RecordPracticeAttemptUseCase @Inject constructor(
             sessionId = sessionId,
             detected = detected,
             target = target,
-            isCorrect = detected == target,
+            isCorrect = detected.samePitchClass(target),
         )
     }
 }

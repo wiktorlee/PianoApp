@@ -3,16 +3,22 @@ package com.example.instrumenttrainer.presentation.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.instrumenttrainer.R
 import com.example.instrumenttrainer.domain.model.Note
+import com.example.instrumenttrainer.ui.theme.BrandCoral
+import com.example.instrumenttrainer.ui.theme.BrandGraphite
+import com.example.instrumenttrainer.ui.theme.SemanticError
+import com.example.instrumenttrainer.ui.theme.SemanticSuccess
+
+private const val MIN_DISPLAY_AMPLITUDE = 0.015f
 
 @Composable
 fun DetectionFeedback(
@@ -21,49 +27,55 @@ fun DetectionFeedback(
     amplitude: Float,
     modifier: Modifier = Modifier,
 ) {
-    val isMatch = detectedNote != null && detectedNote.samePitchClass(userPlayedNote)
-    val compareColor = when {
-        detectedNote == null -> MaterialTheme.colorScheme.onSurface
-        isMatch -> Color(0xFF2E7D32)
-        else -> Color(0xFFC62828)
+    val displayDetected = if (amplitude >= MIN_DISPLAY_AMPLITUDE) detectedNote else null
+    val isMatch = displayDetected != null && displayDetected.samePitchClass(userPlayedNote)
+    val ringColor = when {
+        displayDetected == null -> BrandGraphite.copy(alpha = 0.35f)
+        isMatch -> SemanticSuccess
+        else -> SemanticError
+    }
+    val statusLabel = when {
+        displayDetected == null -> stringResource(R.string.feedback_status_listening)
+        isMatch -> stringResource(R.string.feedback_match_ok)
+        else -> stringResource(R.string.feedback_match_wrong)
+    }
+    val statusColor = when {
+        displayDetected == null -> BrandGraphite
+        isMatch -> SemanticSuccess
+        else -> SemanticError
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Text(
-            text = stringResource(R.string.feedback_user_note, userPlayedNote.displayName),
-            style = MaterialTheme.typography.titleMedium,
+            text = statusLabel,
+            style = MaterialTheme.typography.labelSmall,
+            color = statusColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 12.dp),
         )
-        Text(
-            text = stringResource(
-                R.string.feedback_detected_note,
-                detectedNote?.name ?: "—",
-            ),
-            style = MaterialTheme.typography.displaySmall,
-            color = compareColor,
-            modifier = Modifier.padding(top = 16.dp),
+
+        NoteDetectionRing(
+            noteText = displayDetected?.name ?: "—",
+            sublabel = stringResource(R.string.feedback_user_note, userPlayedNote.name),
+            progress = amplitude.coerceIn(0f, 1f),
+            ringColor = ringColor,
         )
-        if (detectedNote != null) {
-            Text(
-                text = if (isMatch) {
-                    stringResource(R.string.feedback_match_ok)
-                } else {
-                    stringResource(R.string.feedback_match_wrong)
-                },
-                color = compareColor,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-        }
+
+        AmplitudeBar(
+            amplitude = amplitude,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
+        )
+
         Text(
             text = stringResource(R.string.feedback_amplitude, amplitude),
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(top = 12.dp),
-        )
-        LinearProgressIndicator(
-            progress = { amplitude },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
         )
     }
 }
