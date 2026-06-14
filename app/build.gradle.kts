@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.instrumenttrainer"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,6 +35,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     androidResources {
@@ -58,6 +59,8 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.tensorflow.lite)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.appcompat)
     ksp(libs.hilt.compiler)
     ksp(libs.room.compiler)
     implementation(platform(libs.androidx.compose.bom))

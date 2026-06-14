@@ -1,7 +1,9 @@
 package com.example.instrumenttrainer.di
 
+import com.example.instrumenttrainer.data.repository.AppSettingsRepositoryImpl
 import com.example.instrumenttrainer.data.repository.AudioPracticeRepositoryImpl
 import com.example.instrumenttrainer.data.repository.PracticeJournalRepositoryImpl
+import com.example.instrumenttrainer.domain.repository.AppSettingsRepository
 import com.example.instrumenttrainer.domain.repository.AudioPracticeRepository
 import com.example.instrumenttrainer.domain.repository.PracticeJournalRepository
 import dagger.Binds
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindPracticeJournalRepository(
         impl: PracticeJournalRepositoryImpl,
     ): PracticeJournalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAppSettingsRepository(
+        impl: AppSettingsRepositoryImpl,
+    ): AppSettingsRepository
 }

@@ -29,12 +29,13 @@ class ProgressJournalViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             observePracticeSessions().collect { sessions ->
-                val total = sessions.sumOf { it.totalAttempts }
-                val correct = sessions.sumOf { it.correctAttempts }
+                val withAttempts = sessions.filter { it.totalAttempts > 0 }
+                val total = withAttempts.sumOf { it.totalAttempts }
+                val correct = withAttempts.sumOf { it.correctAttempts }
                 val overall = if (total == 0) 0 else (correct * 100) / total
                 _uiState.update {
                     ProgressJournalUiState(
-                        sessions = sessions,
+                        sessions = withAttempts,
                         overallAccuracyPercent = overall,
                         totalAttempts = total,
                     )

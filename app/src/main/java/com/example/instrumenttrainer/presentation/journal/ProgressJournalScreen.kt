@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,18 +18,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.instrumenttrainer.R
 import com.example.instrumenttrainer.domain.model.PracticeSessionSummary
 import com.example.instrumenttrainer.presentation.components.AppScreenHeader
 import com.example.instrumenttrainer.presentation.components.SurfaceCard
-import com.example.instrumenttrainer.ui.theme.BrandCoral
-import com.example.instrumenttrainer.ui.theme.BrandTextTertiary
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.instrumenttrainer.ui.theme.AppTheme
 
 @Composable
 fun ProgressJournalScreen(
@@ -36,6 +32,8 @@ fun ProgressJournalScreen(
     viewModel: ProgressJournalViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val primary = MaterialTheme.colorScheme.primary
+    val trackColor = AppTheme.extra.ringTrack
 
     LazyColumn(
         modifier = modifier
@@ -54,6 +52,7 @@ fun ProgressJournalScreen(
             SurfaceCard(
                 modifier = Modifier.fillMaxWidth(),
                 strong = true,
+                verticalSpacing = 16.dp,
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -64,6 +63,7 @@ fun ProgressJournalScreen(
                         Text(
                             text = stringResource(R.string.journal_accuracy_label),
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             text = stringResource(
@@ -81,16 +81,16 @@ fun ProgressJournalScreen(
                             state.overallAccuracyPercent,
                         ),
                         style = MaterialTheme.typography.displaySmall,
-                        color = BrandCoral,
+                        color = primary,
                     )
                 }
                 LinearProgressIndicator(
                     progress = { state.overallAccuracyPercent / 100f },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    color = BrandCoral,
-                    trackColor = BrandTextTertiary.copy(alpha = 0.2f),
+                        .height(8.dp),
+                    color = primary,
+                    trackColor = trackColor,
                 )
             }
         }
@@ -116,19 +116,23 @@ fun ProgressJournalScreen(
 
 @Composable
 private fun SessionRow(session: PracticeSessionSummary) {
-    val dateText = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-        .format(Date(session.startedAtMillis))
+    val primary = MaterialTheme.colorScheme.primary
+    val trackColor = AppTheme.extra.ringTrack
+    val dateText = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+        .format(java.util.Date(session.startedAtMillis))
 
-    SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+    SurfaceCard(
+        modifier = Modifier.fillMaxWidth(),
+        verticalSpacing = 10.dp,
+    ) {
         Text(
             text = dateText,
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth(),
         )
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -141,8 +145,6 @@ private fun SessionRow(session: PracticeSessionSummary) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = stringResource(
@@ -150,16 +152,17 @@ private fun SessionRow(session: PracticeSessionSummary) {
                     session.accuracyPercent,
                 ),
                 style = MaterialTheme.typography.titleMedium,
-                color = BrandCoral,
+                color = primary,
+                modifier = Modifier.padding(start = 12.dp),
             )
         }
         LinearProgressIndicator(
             progress = { session.accuracyPercent / 100f },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 10.dp),
-            color = BrandCoral,
-            trackColor = BrandTextTertiary.copy(alpha = 0.2f),
+                .height(8.dp),
+            color = primary,
+            trackColor = trackColor,
         )
     }
 }

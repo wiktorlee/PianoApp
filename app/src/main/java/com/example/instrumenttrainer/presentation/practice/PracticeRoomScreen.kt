@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +36,6 @@ import com.example.instrumenttrainer.presentation.components.AppScreenHeader
 import com.example.instrumenttrainer.presentation.components.DetectionFeedback
 import com.example.instrumenttrainer.presentation.components.PitchClassSelector
 import com.example.instrumenttrainer.presentation.components.SurfaceCard
-import com.example.instrumenttrainer.ui.theme.BrandCoral
 
 @Composable
 fun PracticeRoomScreen(
@@ -44,6 +44,7 @@ fun PracticeRoomScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val primary = MaterialTheme.colorScheme.primary
     var saveFeedback by remember { mutableStateOf<String?>(null) }
 
     var hasAudioPermission by remember {
@@ -98,7 +99,7 @@ fun PracticeRoomScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandCoral),
+                    colors = ButtonDefaults.buttonColors(containerColor = primary),
                 ) {
                     Text(text = stringResource(R.string.practice_permission_grant))
                 }
@@ -121,11 +122,19 @@ fun PracticeRoomScreen(
         }
 
         SurfaceCard(modifier = Modifier.fillMaxWidth()) {
-            PitchClassSelector(
-                selectedName = state.userPlayedNote.name,
-                onPitchSelected = viewModel::setUserPlayedPitch,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                PitchClassSelector(
+                    selectedName = state.userPlayedNote.name,
+                    onPitchSelected = viewModel::setUserPlayedPitch,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = stringResource(R.string.practice_save_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         Button(
@@ -140,7 +149,7 @@ fun PracticeRoomScreen(
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = BrandCoral),
+            colors = ButtonDefaults.buttonColors(containerColor = primary),
         ) {
             Text(text = stringResource(R.string.practice_save_attempt))
         }
@@ -163,6 +172,10 @@ fun PracticeRoomScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary,
+            ),
         ) {
             Text(
                 text = if (state.isListening) {

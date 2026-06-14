@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">InstrumentTrainer</string>
+    <string name="tab_practice">Notes</string>
+    <string name="tab_journal">History</string>
+    <string name="tab_settings">Settings</string>
+    <string name="screen_main_title">Note recognition</string>
+    <string name="screen_main_subtitle">Pick a note, play on your instrument and compare with the microphone reading</string>
+    <string name="screen_journal_title">History</string>
+    <string name="screen_journal_subtitle">Sessions created after saving attempts on the Notes screen</string>
+    <string name="screen_settings_title">Settings</string>
+    <string name="screen_settings_subtitle">Interface language and app theme</string>
+    <string name="note_selector_pitch">I played:</string>
+    <string name="feedback_user_note">I played: %1$s</string>
+    <string name="feedback_status_listening">LISTENING</string>
+    <string name="feedback_detected_note">Detected: %1$s</string>
+    <string name="feedback_match_ok">Match</string>
+    <string name="feedback_match_wrong">Mismatch</string>
+    <string name="feedback_amplitude">Volume: %.2f</string>
+    <string name="practice_permission_required">Allow microphone access to recognize notes.</string>
+    <string name="practice_permission_grant">Allow microphone</string>
+    <string name="practice_save_attempt">Save attempt</string>
+    <string name="practice_save_hint">Saves a comparison: the note you selected vs the note detected by the microphone. Each save goes to the History tab and counts toward session accuracy.</string>
+    <string name="practice_save_success">Saved. See the History tab.</string>
+    <string name="practice_save_empty">No note detected — play louder and try again.</string>
+    <string name="practice_start_listening">Resume listening</string>
+    <string name="practice_stop_listening">Pause listening</string>
+    <string name="journal_accuracy_label">Overall accuracy</string>
+    <string name="journal_accuracy_value">%1$d%%</string>
+    <string name="journal_attempts_count">%1$d attempts</string>
+    <string name="journal_empty">No saved attempts yet. On the Notes screen, pick a note, play and tap Save attempt.</string>
+    <string name="journal_session_label">Session</string>
+    <string name="journal_session_correct">Correct: %1$d / %2$d</string>
+    <string name="settings_language_section">Language</string>
+    <string name="settings_language_english">English interface</string>
+    <string name="settings_language_hint">Off = Polish</string>
+    <string name="settings_appearance_section">Appearance</string>
+    <string name="settings_appearance_dark_theme">Dark theme</string>
+    <string name="settings_app_version">App version: %1$s</string>
+</resources>

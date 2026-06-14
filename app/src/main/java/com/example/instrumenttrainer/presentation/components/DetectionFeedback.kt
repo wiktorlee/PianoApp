@@ -13,8 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.instrumenttrainer.R
 import com.example.instrumenttrainer.domain.model.Note
-import com.example.instrumenttrainer.ui.theme.BrandCoral
-import com.example.instrumenttrainer.ui.theme.BrandGraphite
+import com.example.instrumenttrainer.ui.theme.AppTheme
 import com.example.instrumenttrainer.ui.theme.SemanticError
 import com.example.instrumenttrainer.ui.theme.SemanticSuccess
 
@@ -27,10 +26,12 @@ fun DetectionFeedback(
     amplitude: Float,
     modifier: Modifier = Modifier,
 ) {
+    val extra = AppTheme.extra
+    val idleColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
     val displayDetected = if (amplitude >= MIN_DISPLAY_AMPLITUDE) detectedNote else null
     val isMatch = displayDetected != null && displayDetected.samePitchClass(userPlayedNote)
     val ringColor = when {
-        displayDetected == null -> BrandGraphite.copy(alpha = 0.35f)
+        displayDetected == null -> extra.ringTrack
         isMatch -> SemanticSuccess
         else -> SemanticError
     }
@@ -40,7 +41,7 @@ fun DetectionFeedback(
         else -> stringResource(R.string.feedback_match_wrong)
     }
     val statusColor = when {
-        displayDetected == null -> BrandGraphite
+        displayDetected == null -> idleColor
         isMatch -> SemanticSuccess
         else -> SemanticError
     }
@@ -62,6 +63,7 @@ fun DetectionFeedback(
             sublabel = stringResource(R.string.feedback_user_note, userPlayedNote.name),
             progress = amplitude.coerceIn(0f, 1f),
             ringColor = ringColor,
+            amplitude = amplitude,
         )
 
         AmplitudeBar(

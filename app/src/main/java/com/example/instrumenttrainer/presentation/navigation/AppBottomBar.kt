@@ -16,8 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.instrumenttrainer.ui.theme.BrandGraphiteSoft
+import com.example.instrumenttrainer.ui.theme.AppTheme
 import com.example.instrumenttrainer.ui.theme.BrandMistBg
+import com.example.instrumenttrainer.ui.theme.BrandNavDark
 
 @Composable
 fun AppBottomBar(
@@ -25,9 +26,13 @@ fun AppBottomBar(
     onTabSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val extra = AppTheme.extra
+    val isDarkNav = extra.navBarBackground == BrandNavDark
+    val unselectedColor = if (isDarkNav) BrandMistBg else MaterialTheme.colorScheme.onSurface
+
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = BrandMistBg,
+        color = extra.navBarBackground,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
     ) {
@@ -44,7 +49,7 @@ fun AppBottomBar(
                     onClick = { onTabSelected(tab.route) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
-                    color = if (selected) BrandGraphiteSoft else BrandMistBg,
+                    color = if (selected) extra.navBarSelectedPill else extra.navBarBackground,
                     tonalElevation = 0.dp,
                 ) {
                     Row(
@@ -54,22 +59,14 @@ fun AppBottomBar(
                     ) {
                         Icon(
                             imageVector = tab.icon,
-                            contentDescription = null,
-                            tint = if (selected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
+                            contentDescription = stringResource(tab.labelRes),
+                            tint = if (selected) MaterialTheme.colorScheme.primary else unselectedColor,
                         )
                         Text(
                             text = stringResource(tab.labelRes),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = if (selected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
+                            color = if (selected) MaterialTheme.colorScheme.primary else unselectedColor,
                             modifier = Modifier.padding(start = 6.dp),
                         )
                     }

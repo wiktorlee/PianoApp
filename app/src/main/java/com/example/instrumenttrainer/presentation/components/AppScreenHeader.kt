@@ -24,6 +24,7 @@ fun AppScreenHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.fillMaxWidth(),
         )
         if (subtitle != null) {

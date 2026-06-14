@@ -62,7 +62,6 @@ class PracticeRoomViewModel @Inject constructor(
     fun startListening() {
         if (_uiState.value.isListening) return
         viewModelScope.launch {
-            currentSessionId = recordPracticeAttempt.startSession()
             managePracticeSession.start()
             _uiState.update { it.copy(isListening = true, saveMessage = null) }
         }

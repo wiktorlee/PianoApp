@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.instrumenttrainer.R
 import com.example.instrumenttrainer.domain.model.NoteCatalog
-import com.example.instrumenttrainer.ui.theme.BrandCoral
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -25,10 +24,12 @@ fun PitchClassSelector(
     onPitchSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.note_selector_pitch),
             style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         FlowRow(
             modifier = Modifier
@@ -43,8 +44,8 @@ fun PitchClassSelector(
                     onClick = { onPitchSelected(name) },
                     label = { Text(name) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = BrandCoral.copy(alpha = 0.18f),
-                        selectedLabelColor = BrandCoral,
+                        selectedContainerColor = primary.copy(alpha = 0.18f),
+                        selectedLabelColor = primary,
                     ),
                 )
             }
